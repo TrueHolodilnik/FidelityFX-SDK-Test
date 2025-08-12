@@ -34,6 +34,7 @@
 #include <ffx_api/ffx_api.hpp>
 #include <ffx_api/ffx_upscale.hpp>
 #include <ffx_api/ffx_framegeneration.hpp>
+#include <antilag/antilag.h>
 
 #include <functional>
 
@@ -268,6 +269,7 @@ private:
     uint32_t m_HybridSpinTime;
     bool m_AllowWaitForSingleObjectOnFence;
     FfxApiSwapchainFramePacingTuning framePacingTuning;
+    AntiLagContext m_AntiLagContext = nullptr;
 };
 
 // alias to get sample.cpp to use this class.
