@@ -44,6 +44,8 @@ set_target_properties(amd_fidelityfx PROPERTIES
 					  IMPORTED_IMPLIB_RELWITHDEBINFOVK 		"${FFX_API_PATHNAME_VKDREL}.lib"
 					  IMPORTED_IMPLIB_DEBUGVK 				"${FFX_API_PATHNAME_VKD}.lib")
 
+# AntiLag2 SDK
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/antilag ${CMAKE_CURRENT_BINARY_DIR}/thirdparty/antilag)
 # FSR render module files
 set(fsr_api_src ${CMAKE_CURRENT_SOURCE_DIR}/fsrapirendermodule.h ${CMAKE_CURRENT_SOURCE_DIR}/fsrapirendermodule.cpp)
 
@@ -58,7 +60,8 @@ add_executable(${PROJECT_NAME} WIN32 ${default_icon_src} ${default_entry_point} 
 set(EXE_OUT_NAME ${PROJECT_NAME}_)
 
 # Link everything
-target_link_libraries(${PROJECT_NAME} LINK_PUBLIC Framework RenderModules d3dcompiler amd_fidelityfx backend_interface_stub)
+target_link_libraries(${PROJECT_NAME} LINK_PUBLIC Framework RenderModules d3dcompiler amd_fidelityfx backend_interface_stub antilag)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/antilag/include)
 set_target_properties(${PROJECT_NAME} PROPERTIES
 						OUTPUT_NAME_DEBUGDX12 "${EXE_OUT_NAME}DX12D"
 						OUTPUT_NAME_DEBUGVK "${EXE_OUT_NAME}VKD"

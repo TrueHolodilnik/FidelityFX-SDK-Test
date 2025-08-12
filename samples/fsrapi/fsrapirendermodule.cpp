@@ -316,6 +316,19 @@ void FSRRenderModule::Init(const json& initData)
     // Finish up init
 
     // That's all we need for now
+    AntiLagCreateInfo alInfo{};
+#if defined(FFX_API_DX12)
+    alInfo.device = GetDevice()->GetImpl()->DX12Device();
+    alInfo.swapchain = GetSwapChain()->GetImpl()->DX12SwapChain();
+    alInfo.queue = GetDevice()->GetImpl()->DX12CmdQueue(cauldron::CommandQueue::Graphics);
+    alInfo.window = GetFramework()->GetImpl()->GetHWND();
+#elif defined(FFX_API_VK)
+    alInfo.device = GetDevice()->GetImpl()->VKDevice();
+    alInfo.swapchain = GetSwapChain()->GetImpl()->VKSwapChain();
+    alInfo.queue = GetDevice()->GetImpl()->VKCmdQueue(cauldron::CommandQueue::Graphics);
+    alInfo.window = GetFramework()->GetImpl()->GetHWND();
+#endif
+    m_AntiLagContext = antilagCreate(&alInfo);
     SetModuleReady(true);
 
     SwitchUpscaler(m_UiUpscaleMethod);
@@ -323,6 +336,10 @@ void FSRRenderModule::Init(const json& initData)
 
 FSRRenderModule::~FSRRenderModule()
 {
+    if (m_AntiLagContext) {
+        antilagDestroy(m_AntiLagContext);
+        m_AntiLagContext = nullptr;
+    }
     // Destroy the FSR context
     UpdateFSRContext(false);
 
@@ -1496,6 +1513,11 @@ void FSRRenderModule::Execute(double deltaTime, CommandList* pCmdList)
     SetAllResourceViewHeaps(pCmdList);
 
     // We are now done with upscaling
+    if (m_AntiLagContext) {
+        AntiLagFrameInfo frameInfo{};
+        frameInfo.deltaTime = deltaTime;
+        antilagUpdate(m_AntiLagContext, &frameInfo);
+    }
     GetFramework()->SetUpscalingState(UpscalerState::PostUpscale);
 }
 
